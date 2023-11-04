@@ -1,0 +1,14 @@
+GET http://localhost:3000/flights
+
+###
+
+GET http://localhost:3000/flights/15
+
+###
+POST http://localhost:3000/flights   
+content-type: application/json
+
+{
+    "nombre": "New Person",
+    "puesto": "User"
+}
