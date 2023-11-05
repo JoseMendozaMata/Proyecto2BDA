@@ -16,27 +16,26 @@ def register_collaborator(email, password):
     data = {
         "usuario": email,
         "clave": password,
-        "rol": "colaborator"
+        "rol": "Colaborador"
     }
 
     response = requests.post(api_url+"Users", json=data)
     return response
 
-def solicit_trip(nombre_completo, puesto, departamento, tipo_de_viaje, pais_destino, motivo, fecha_inicio, fecha_fin, aerolinea, precio, alojamiento, transporte):
-    data = {
-        "nombre_completo": nombre_completo,
-        "puesto": puesto,
-        "departamento": departamento,
-        "tipo_de_viaje": tipo_de_viaje,
-        "pais_destino": pais_destino,
-        "motivo": motivo,
-        "fecha_inicio": fecha_inicio,
-        "fecha_fin": fecha_fin,
-        "aerolinea": aerolinea,
-        "precio": precio,
-        "alojamiento": alojamiento,
-        "transporte": transporte
-    }
-
-    response = requests.post(api_url, json=data)
+def solicit_trip(usr_id, trip_data):
+    
+    print("url ", api_url+"flights/"+usr_id)
+    response = requests.post(api_url+"flights/"+usr_id, json=trip_data)
     return response
+
+def delete_trip(usr_id, trip_data):
+    response = requests.patch(api_url+"flights/"+usr_id, json=trip_data)
+    return response
+
+def get_trip(usr_id):
+    response = requests.get(api_url+"flights/getCollaboratorFlights/"+usr_id)
+    return response
+def update_trip(trip_id, trip_data):
+    response = requests.patch(api_url+"flights/"+trip_id, json=trip_data)
+    return response
+#def delete_trip(id_colaborador, id_vuelo, )
