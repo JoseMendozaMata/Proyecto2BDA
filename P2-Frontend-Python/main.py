@@ -39,7 +39,7 @@ def collaborator_new_flight():
                     "nombre": nombre_completo,
                     "puesto": puesto,
                     "departamento": departamento,
-                    "internacional": False,
+                    "internacional": int(tipo_de_viaje),
                     "pais": pais_destino,
                     "motivo": motivo,
                     "fechas": {"fecha_ida" : fecha_inicio,
@@ -49,10 +49,10 @@ def collaborator_new_flight():
                             },
                     "details":{
                                 "nombre_aerolinea": aerolinea,
-                                "precio": 500},
+                                "precio": int(precio)},
 
                     "alojamiento": alojamiento,
-                    "requiere_transporte": False,
+                    "requiere_transporte": int(transporte),
                     "estado":"Pendiente"
                     
                     
@@ -81,7 +81,7 @@ def collaborator_new_flight():
     entry_departamento = ttk.Entry(new_window)
     entry_departamento.grid(row=2, column=1)
 
-    ttk.Label(new_window, text="Tipo de Viaje:").grid(row=3, column=0)
+    ttk.Label(new_window, text="Internacional? (0/1):").grid(row=3, column=0)
     entry_tipo_de_viaje = ttk.Entry(new_window)
     entry_tipo_de_viaje.grid(row=3, column=1)
 
@@ -121,7 +121,7 @@ def collaborator_new_flight():
     entry_alojamiento = ttk.Entry(new_window)
     entry_alojamiento.grid(row=12, column=1)
 
-    ttk.Label(new_window, text="Transporte:").grid(row=13, column=0)
+    ttk.Label(new_window, text="Transporte? (0/1):").grid(row=13, column=0)
     entry_transporte = ttk.Entry(new_window)
     entry_transporte.grid(row=13, column=1)
 
@@ -233,7 +233,7 @@ def collaborator_history():
                 hora_ida = entry_hora_inicio.get()
                 hora_vuelta = entry_hora_fin.get()
 
-                
+                print("id_vuelo: ", id_vuelo)
                 form_data = {
                             "id_colaborador" : global_id,
                             "id_vuelo": id_vuelo,
@@ -258,13 +258,14 @@ def collaborator_history():
                             
                             
                         }
-                response = api_functions.solicit_trip(global_id,form_data)
+                response = api_functions.solicit_trip(id_vuelo,form_data)
                 print("trip form res",response)
                 print("trip form number",response.status_code)
                 print("trip form text", response.text)
                 
                 #form_data_list.append(form_data)
                 api_functions.update_trip(id_vuelo, form_data)
+                refresh_form_data_listbox()
                 
     def delete_form_data(index,trip_id):
         global form_data_list
