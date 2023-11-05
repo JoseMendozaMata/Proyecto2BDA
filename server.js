@@ -16,6 +16,9 @@ app.use(express.json());
 const flightsRouter = require("./routes/flights");
 app.use("/flights", flightsRouter);
 
+const usersRouter = require("./routes/users");
+app.use("/users", usersRouter);
+
 app.listen(3000, () => {
     console.log("Server is running");
 });

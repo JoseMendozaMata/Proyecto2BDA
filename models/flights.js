@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const flightSchema = new mongoose.Schema({
+    id_colaborador: {
+        type: String,
+        required: true,
+    },
     nombre: {
         type: String,
         required: true,

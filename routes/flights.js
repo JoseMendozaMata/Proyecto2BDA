@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Flight = require("../models/flights");
+const User = require("../models/users");
 
 //Get All
 router.get("/", async (req, res) => {
@@ -13,15 +14,58 @@ router.get("/", async (req, res) => {
 });
 
 // Get One
-router.get("/:id", (req, res) => {
-    res.send(req.params.id);
+router.get("/:id", getFlight, (req, res) => {
+    res.json(res.flight);
+});
+
+//Get all pending flight requests
+
+router.get("/getPendingFlights/:id", getUser, async (req, res) => {
+    try {
+        //Check if user id Admin
+        console.log(res.user);
+        if (res.user.rol == "Admin") {
+            const pendingFlights = await Flight.find({
+                estado: "Pendiente",
+            }).select({ _id: 1, estado: 1 });
+            res.json(pendingFlights);
+        } else {
+            res.status(403).json({ message: "Access Denied" });
+        }
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+//Get flights from user
+
+router.get("/getCollaboratorFlights/:id", getUser, async (req, res) => {
+    try {
+        //Check if user id Admin
+        console.log(res.user);
+        if (res.user.rol == "Colaborador") {
+            console.log(req.params.id);
+            const colabFlights = await Flight.find({
+                id_colaborador: req.params.id,
+            });
+            res.json(colabFlights);
+        } else {
+            res.status(403).json({ message: "Access Denied" });
+        }
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
 });
 
 //Create One
-router.post("/", async (req, res) => {
+router.post("/:id", getUser, async (req, res) => {
+    //Check if user is collaborator
+
     //Create new flight object
-    console.log(req.body);
+
     const flight = new Flight({
+        id_colaborador: req.params.id,
+        usuario: req.body.usuario,
         nombre: req.body.nombre,
         puesto: req.body.puesto,
         departamento: req.body.departamento,
@@ -36,17 +80,150 @@ router.post("/", async (req, res) => {
     });
 
     try {
-        const newFlight = await flight.save();
-        res.status(201).json(newFlight);
+        //Check if user is Colaborator
+        console.log(res.user);
+        if (res.user.rol == "Colaborador") {
+            const newFlight = await flight.save();
+            res.status(201).json(newFlight._id);
+        } else {
+            res.status(403).json({ message: "Admin cannot register flights" });
+        }
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
 });
 
 //Update One
-router.patch("/:id", (req, res) => {});
+router.patch("/:id", getFlight, async (req, res) => {
+    //check all required fields
+
+    if (req.body.usuario != null) {
+        res.flight.usuario = req.body.usuario;
+    }
+    if (req.body.nombre != null) {
+        res.flight.nombre = req.body.nombre;
+    }
+    if (req.body.puesto != null) {
+        res.flight.puesto = req.body.puesto;
+    }
+    if (req.body.departamento != null) {
+        res.flight.departamento = req.body.departamento;
+    }
+    if (req.body.internacional != null) {
+        res.flight.internacional = req.body.internacional;
+    }
+    if (req.body.pais != null) {
+        res.flight.pais = req.body.pais;
+    }
+    if (req.body.motivo != null) {
+        res.flight.motivo = req.body.motivo;
+    }
+    if (req.body.fechas != null) {
+        res.flight.fechas = req.body.fechas;
+    }
+    if (req.body.details != null) {
+        res.flight.details = req.body.details;
+    }
+    if (req.body.alojamiento != null) {
+        res.flight.alojamiento = req.body.alojamiento;
+    }
+    if (req.body.requiere_transporte != null) {
+        res.flight.requiere_transporte = req.body.requiere_transporte;
+    }
+    if (req.body.estado != null) {
+        res.flight.estado = req.body.estado;
+    }
+
+    try {
+        //Check if the change is from the same collaborator
+        //const updatedFlight = await res.flight.save();
+
+        const flight = await res.flight;
+
+        //Check if the change is from a collaborator
+
+        const user = await User.findById(req.body.id_colaborador);
+
+        if (user.rol != "Colaborador") {
+            res.status(403).json({ message: "No es colaborador" });
+        } else {
+            //Check if user made a change for their flights
+            console.log("Vuelo encontrado: ");
+            console.log(flight.id);
+            console.log(flight.id_colaborador);
+            if (
+                flight.id == req.body.id_vuelo &&
+                flight.id_colaborador == req.body.id_colaborador
+            ) {
+                const updatedFlight = await res.flight.save();
+                res.json(updatedFlight);
+            } else {
+                res.status(400).json({
+                    message: "No puede cambiar vuelos de otro colaborador",
+                });
+            }
+        }
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
 
 //Delete One
-router.delete("/:id", (req, res) => {});
+router.delete("/:id", getFlight, async (req, res) => {
+    try {
+        //Check if the change is from the same collaborator
+        //const updatedFlight = await res.flight.save();
+
+        const flight = await res.flight;
+
+        //Check if the change is from a collaborator
+        console.log(req.body.id_colaborador);
+        const user = await User.findById(req.body.id_colaborador);
+
+        if (user.rol != "Colaborador") {
+            res.status(403).json({ message: "No es colaborador" });
+        } else {
+            //Check if user made a change for their flights
+            if (flight.id == req.body.id_vuelo) {
+                await res.flight.deleteOne();
+                res.json({ message: "Deleted Flight" });
+            } else {
+                res.status(400).json({
+                    message: "No puede cambiar vuelos de otro colaborador",
+                });
+            }
+        }
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+async function getFlight(req, res, next) {
+    let flight;
+    try {
+        flight = await Flight.findById(req.params.id);
+        if (flight == null) {
+            return res.status(404).json({ message: "Cannot find flight" });
+        }
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+    res.flight = flight;
+    next();
+}
+
+async function getUser(req, res, next) {
+    let user;
+    try {
+        user = await User.findById(req.params.id);
+        if (user == null) {
+            return res.status(404).json({ message: "Cannot find flight" });
+        }
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+    res.user = user;
+    next();
+}
 
 module.exports = router;
