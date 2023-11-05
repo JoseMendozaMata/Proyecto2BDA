@@ -19,3 +19,7 @@ app.use("/flights", flightsRouter);
 app.listen(3000, () => {
     console.log("Server is running");
 });
+
+app.get('/', (consulta, respuesta) => {
+    respuesta.send('API running ...');
+  });
