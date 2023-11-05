@@ -3,7 +3,7 @@ const router = express.Router();
 const Flight = require("../models/flights");
 const User = require("../models/users");
 
-//Get All
+//Get All Flights
 router.get("/", async (req, res) => {
     try {
         const flights = await Flight.find();
@@ -13,13 +13,12 @@ router.get("/", async (req, res) => {
     }
 });
 
-// Get One
+// Get One Flight by his flght id
 router.get("/:id", getFlight, (req, res) => {
     res.json(res.flight);
 });
 
-//Get all pending flight requests
-
+//Get all pending flight requests from an user ID
 router.get("/getPendingFlights/:id", getUser, async (req, res) => {
     try {
         //Check if user id Admin
@@ -37,8 +36,7 @@ router.get("/getPendingFlights/:id", getUser, async (req, res) => {
     }
 });
 
-//Get flights from user
-
+//Get flights from user by his ID
 router.get("/getCollaboratorFlights/:id", getUser, async (req, res) => {
     try {
         //Check if user id Admin
@@ -57,12 +55,9 @@ router.get("/getCollaboratorFlights/:id", getUser, async (req, res) => {
     }
 });
 
-//Create One
+//Create One flight by a user, using his ID
 router.post("/:id", getUser, async (req, res) => {
-    //Check if user is collaborator
-
     //Create new flight object
-
     const flight = new Flight({
         id_colaborador: req.params.id,
         usuario: req.body.usuario,
@@ -93,7 +88,7 @@ router.post("/:id", getUser, async (req, res) => {
     }
 });
 
-//Update One
+//Update One flight, body needs id_colaborador and id_vuelo, :id is the flight id
 router.patch("/:id", getFlight, async (req, res) => {
     //check all required fields
 
@@ -135,22 +130,17 @@ router.patch("/:id", getFlight, async (req, res) => {
     }
 
     try {
-        //Check if the change is from the same collaborator
-        //const updatedFlight = await res.flight.save();
-
+        //Get the flight
         const flight = await res.flight;
 
-        //Check if the change is from a collaborator
-
+        //Get the user that made the request
         const user = await User.findById(req.body.id_colaborador);
 
+        //Check if the change is from a collaborator
         if (user.rol != "Colaborador") {
             res.status(403).json({ message: "No es colaborador" });
         } else {
-            //Check if user made a change for their flights
-            console.log("Vuelo encontrado: ");
-            console.log(flight.id);
-            console.log(flight.id_colaborador);
+            //Check if user made a change for their flights, he cannot make changes in other collaborator's flights
             if (
                 flight.id == req.body.id_vuelo &&
                 flight.id_colaborador == req.body.id_colaborador
@@ -168,22 +158,19 @@ router.patch("/:id", getFlight, async (req, res) => {
     }
 });
 
-//Delete One
+//Delete One flight by their flight id, body needs id_colaborador and id_vuelo as well, :id is the flight id
 router.delete("/:id", getFlight, async (req, res) => {
     try {
-        //Check if the change is from the same collaborator
-        //const updatedFlight = await res.flight.save();
-
+        //Get the flight
         const flight = await res.flight;
 
         //Check if the change is from a collaborator
-        console.log(req.body.id_colaborador);
         const user = await User.findById(req.body.id_colaborador);
 
         if (user.rol != "Colaborador") {
             res.status(403).json({ message: "No es colaborador" });
         } else {
-            //Check if user made a change for their flights
+            //Check if user is trying to delete one of their flights
             if (flight.id == req.body.id_vuelo) {
                 await res.flight.deleteOne();
                 res.json({ message: "Deleted Flight" });
@@ -198,6 +185,7 @@ router.delete("/:id", getFlight, async (req, res) => {
     }
 });
 
+//Function to get one flight by his ID
 async function getFlight(req, res, next) {
     let flight;
     try {
@@ -212,6 +200,7 @@ async function getFlight(req, res, next) {
     next();
 }
 
+//Function to get one user by his ID
 async function getUser(req, res, next) {
     let user;
     try {
