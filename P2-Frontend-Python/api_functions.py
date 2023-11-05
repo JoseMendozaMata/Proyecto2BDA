@@ -28,8 +28,12 @@ def solicit_trip(usr_id, trip_data):
     response = requests.post(api_url+"flights/"+usr_id, json=trip_data)
     return response
 
-def delete_trip(usr_id, trip_data):
-    response = requests.patch(api_url+"flights/"+usr_id, json=trip_data)
+def delete_trip(trip_id, usr_id):
+    data = {
+        "id_colaborador": usr_id,
+        "id_vuelo": trip_id
+    }
+    response = requests.delete(api_url+"flights/"+trip_id, json=data)
     return response
 
 def get_trip(usr_id):
