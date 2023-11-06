@@ -1,0 +1,21 @@
+GET http://localhost:3000/flights
+
+###
+
+GET http://localhost:3000/users
+
+###
+
+GET http://localhost:3000/flights/6547bb61e63f30b697758190
+
+###
+POST http://localhost:3000/flights   
+content-type: application/json
+
+{
+    "nombre": "New Person",
+    "puesto": "User"
+}
+
+###
+DELETE http://localhost:3000/flights/6547c131ba81c17f0de81f73

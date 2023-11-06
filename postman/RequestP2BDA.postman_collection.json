@@ -1,0 +1,231 @@
+{
+	"info": {
+		"_postman_id": "a5050c27-2a3f-4106-a982-1dcdb45f55f5",
+		"name": "RequestP2BDA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "10159319"
+	},
+	"item": [
+		{
+			"name": "Flights",
+			"item": [
+				{
+					"name": "Get All Flgihts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:3000/flights"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pending Flights",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Flights",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Get One Flight",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Get Destiny Flights",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"destiny\": \"Costa Rica\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:3000/flights/getDestinyFlights/"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Programmed Flights",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"fecha\": \"2012-12-12\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:3000/flights/getProgrammedFlights/6547de5cdd086642b4f421ce"
+					},
+					"response": []
+				},
+				{
+					"name": "Get International Flights",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"trimestre\": \"4\",\r\n    \"anho\": \"2012\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:3000/flights/getInternationalFlights/6547de5cdd086642b4f421ce"
+					},
+					"response": []
+				},
+				{
+					"name": "Post One Flight",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\":\"Fabian\",\r\n    \"puesto\": \"Estudiante\",\r\n    \"departamento\": \"Mexico\",\r\n    \"internacional\": false,\r\n    \"pais\": \"Puerto Rico\",\r\n    \"motivo\": \"Proyecto\",\r\n    \"fechas\": {\r\n            \"fecha_ida\": \"2012-12-12\",\r\n            \"fecha_vuelta\": \"13-12-12\"\r\n    },\r\n    \"details\": {\r\n            \"nombre_aerolinea\": \"AerolieneasPatito\",\r\n            \"precio\": 50000\r\n    },\r\n    \"alojamiento\": \"Hotel Patito\",\r\n    \"requiere_transporte\": false,\r\n    \"estado\": \"Pendiente\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:3000/flights/6547da8f0f11c9414f7fc96f"
+					},
+					"response": []
+				},
+				{
+					"name": "Patch One Flight",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id_colaborador\": \"6547de5cdd086642b4f421ce\",\r\n    \"id_vuelo\": \"65491e67d3c766eb110c4fc6\",\r\n    \"nombre\":\"Cambiar Nombre Desde Fabian\",\r\n    \"puesto\": \"Estudiante\",\r\n    \"departamento\": \"Petete\",\r\n    \"internacional\": false,\r\n    \"pais\": \"Costa Rica\",\r\n    \"motivo\": \"Proyecto\",\r\n    \"fechas\": {\r\n            \"fecha_ida\": \"12-12-12\",\r\n            \"fecha_vuelta\": \"13-12-12\"\r\n    },\r\n    \"details\": {\r\n            \"nombre_aerolinea\": \"AerolieneasPatito\",\r\n            \"precio\": 50000\r\n    },\r\n    \"alojamiento\": \"Hotel Patito\",\r\n    \"requiere_transporte\": false,\r\n    \"estado\": \"Aprobado\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:3000/flights/65491e67d3c766eb110c4fc6"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete One Flight",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id_colaborador\":\"6547d3e78536bb3a1c04d96a\",\r\n    \"id_vuelo\": \"6547d3be8536bb3a1c04d95f\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:3000/flights/6547c131ba81c17f0de81f73"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Post One User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"usuario\":\"Fabian\",\r\n    \"clave\": \"123\",\r\n    \"rol\": \"Admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:3000/flights"
+					},
+					"response": []
+				},
+				{
+					"name": "Patch One User",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\":\"Fabian\",\r\n    \"puesto\": \"Estudiante\",\r\n    \"departamento\": \"Cartago\",\r\n    \"internacional\": false,\r\n    \"pais\": \"Costa Rica\",\r\n    \"motivo\": \"Proyecto\",\r\n    \"fechas\": {\r\n            \"fecha_ida\": \"12-12-12\",\r\n            \"hora_ida\": \"3:00 p.m.\",\r\n            \"fecha_vuelta\": \"13-12-12\",\r\n            \"hora_vuelta\": \"5:00 a.m.\"\r\n    },\r\n    \"details\": {\r\n            \"nombre_aerolinea\": \"AerolieneasPatito\",\r\n            \"precio\": 50000\r\n    },\r\n    \"alojamiento\": \"Hotel Patito\",\r\n    \"requiere_transporte\": false,\r\n    \"estado\": \"Pendiente\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:3000/flights/12345"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete One User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:3000/flights/6547c131ba81c17f0de81f73"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
