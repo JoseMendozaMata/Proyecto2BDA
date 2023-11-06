@@ -31,17 +31,13 @@ const flightSchema = new mongoose.Schema({
     },
     fechas: {
         type: {
-            fecha_ida: String,
-            hora_ida: String,
-            fecha_vuelta: String,
-            hora_vuelta: String,
+            fecha_ida: Date,
+            fecha_vuelta: Date,
         },
         required: true,
         default: {
-            fecha_ida: "0-0-0",
-            hora_ida: "0:00 a.m.",
-            fecha_vuelta: "0-0-0",
-            hora_vuelta: "0:00 a.m.",
+            fecha_ida: "2001-1-1",
+            fecha_vuelta: "2001-1-2",
         },
     },
     details: {

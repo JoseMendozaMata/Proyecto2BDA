@@ -55,6 +55,129 @@ router.get("/getCollaboratorFlights/:id", getUser, async (req, res) => {
     }
 });
 
+//Get flights from an specific date, :id is the id of the user making the request
+router.get("/getProgrammedFlights/:id", getUser, async (req, res) => {
+    try {
+        //Check if user id Admin
+        console.log(res.user);
+        if (res.user.rol == "Admin") {
+            console.log(req.body.fecha);
+
+            //Obtener datos de la fecha
+
+            var date = new Date(req.body.fecha);
+
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            const startDate = new Date(year, month, 1);
+            const endDate = new Date(year, month, 30);
+
+            console.log("Fecha inicio" + startDate);
+            console.log("Fecha Final" + endDate);
+
+            const dateFlights = await Flight.find({
+                "fechas.fecha_ida": {
+                    $gte: startDate,
+                    $lte: endDate,
+                },
+                estado: "Aprobado",
+            }).select({
+                nombre: 1,
+                departamento: 1,
+            });
+            console.log(dateFlights);
+            res.json(dateFlights);
+        } else {
+            res.status(403).json({ message: "Access Denied" });
+        }
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+//Get flights from an specific trimester and year, :id is the id of the user making the request
+router.get("/getInternationalFlights/:id", getUser, async (req, res) => {
+    try {
+        //Check if user id Admin
+        console.log(res.user);
+        if (res.user.rol == "Admin") {
+            //console.log(req.body.fecha);
+
+            //Obtener datos de la fecha
+            let mes;
+
+            //Trimestre
+            switch (req.body.trimestre) {
+                case "1":
+                    mes = 1;
+                    break;
+                case "2":
+                    mes = 4;
+                    break;
+                case "3":
+                    mes = 7;
+                    break;
+                case "4":
+                    mes = 10;
+                    break;
+                default:
+                    mes = 1;
+            }
+
+            const fecha = req.body.anho + mes + "1";
+
+            var date = new Date(fecha);
+
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            const startDate = new Date(req.body.anho, mes, 1);
+            const endDate = new Date(req.body.anho, mes + 2, 30);
+
+            console.log("Fecha inicio" + startDate);
+            console.log("Fecha Final" + endDate);
+
+            const dateFlights = await Flight.find({
+                "fechas.fecha_ida": {
+                    $gte: startDate,
+                    $lte: endDate,
+                },
+                internacional: true,
+            }).select({
+                nombre: 1,
+                pais: 1,
+            });
+            console.log(dateFlights);
+            res.json(dateFlights);
+        } else {
+            res.status(403).json({ message: "Access Denied" });
+        }
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+router.get("/getDestinyFlights/:id", getUser, async (req, res) => {
+    try {
+        //Check if user id Admin
+        console.log(res.user);
+        if (res.user.rol == "Admin") {
+            console.log(req.params.id);
+            const destinyFlights = await Flight.find({
+                pais: req.body.destiny,
+            }).select({
+                nombre: 1,
+                "fechas.fecha_ida": 1,
+                motivo: 1,
+            });
+            res.json(destinyFlights);
+        } else {
+            res.status(403).json({ message: "Access Denied" });
+        }
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
 //Create One flight by a user, using his ID
 router.post("/:id", getUser, async (req, res) => {
     //Create new flight object
@@ -90,45 +213,6 @@ router.post("/:id", getUser, async (req, res) => {
 
 //Update One flight, body needs id_colaborador and id_vuelo, :id is the flight id
 router.patch("/:id", getFlight, async (req, res) => {
-    //check all required fields
-
-    if (req.body.usuario != null) {
-        res.flight.usuario = req.body.usuario;
-    }
-    if (req.body.nombre != null) {
-        res.flight.nombre = req.body.nombre;
-    }
-    if (req.body.puesto != null) {
-        res.flight.puesto = req.body.puesto;
-    }
-    if (req.body.departamento != null) {
-        res.flight.departamento = req.body.departamento;
-    }
-    if (req.body.internacional != null) {
-        res.flight.internacional = req.body.internacional;
-    }
-    if (req.body.pais != null) {
-        res.flight.pais = req.body.pais;
-    }
-    if (req.body.motivo != null) {
-        res.flight.motivo = req.body.motivo;
-    }
-    if (req.body.fechas != null) {
-        res.flight.fechas = req.body.fechas;
-    }
-    if (req.body.details != null) {
-        res.flight.details = req.body.details;
-    }
-    if (req.body.alojamiento != null) {
-        res.flight.alojamiento = req.body.alojamiento;
-    }
-    if (req.body.requiere_transporte != null) {
-        res.flight.requiere_transporte = req.body.requiere_transporte;
-    }
-    if (req.body.estado != null) {
-        res.flight.estado = req.body.estado;
-    }
-
     try {
         //Get the flight
         const flight = await res.flight;
@@ -138,8 +222,50 @@ router.patch("/:id", getFlight, async (req, res) => {
 
         //Check if the change is from a collaborator
         if (user.rol != "Colaborador") {
-            res.status(403).json({ message: "No es colaborador" });
+            //Admin solo puede cambiar el estado (Pendiente, Aprobado)
+            if (req.body.estado != null) {
+                res.flight.estado = req.body.estado;
+            }
+            //res.status(403).json({ message: "No es colaborador" });
+            const updatedFlight = await res.flight.save();
+            res.json(updatedFlight);
         } else {
+            //check all required fields
+
+            if (req.body.usuario != null) {
+                res.flight.usuario = req.body.usuario;
+            }
+            if (req.body.nombre != null) {
+                res.flight.nombre = req.body.nombre;
+            }
+            if (req.body.puesto != null) {
+                res.flight.puesto = req.body.puesto;
+            }
+            if (req.body.departamento != null) {
+                res.flight.departamento = req.body.departamento;
+            }
+            if (req.body.internacional != null) {
+                res.flight.internacional = req.body.internacional;
+            }
+            if (req.body.pais != null) {
+                res.flight.pais = req.body.pais;
+            }
+            if (req.body.motivo != null) {
+                res.flight.motivo = req.body.motivo;
+            }
+            if (req.body.fechas != null) {
+                res.flight.fechas = req.body.fechas;
+            }
+            if (req.body.details != null) {
+                res.flight.details = req.body.details;
+            }
+            if (req.body.alojamiento != null) {
+                res.flight.alojamiento = req.body.alojamiento;
+            }
+            if (req.body.requiere_transporte != null) {
+                res.flight.requiere_transporte = req.body.requiere_transporte;
+            }
+
             //Check if user made a change for their flights, he cannot make changes in other collaborator's flights
             if (
                 flight.id == req.body.id_vuelo &&
