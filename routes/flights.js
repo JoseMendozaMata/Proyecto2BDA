@@ -37,68 +37,6 @@ router.get("/getPendingFlights/:id", getUser, async (req, res) => {
     }
 });
 
-// get all flights by month
-router.get("/getFlightsbyMonth/:id/:month/:year", getUser, async (req, res) => {
-    try {
-        //Check if user id Admin
-        console.log(res.user);
-        if (res.user.rol == "Admin") {
-            const monthFlights = await Flight.find({
-                "fechas.fecha_ida": {
-                    $regex: `/${req.params.month}/${req.params.year}$`,
-                },
-                estado: "Aprobado",
-            }).select({ _id: 0, nombre: 1, departamento: 1 });
-            res.json(monthFlights);
-        } else {
-            res.status(403).json({ message: "Access Denied" });
-        }
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-});
-
-// get all International flights by trimester
-router.get(
-    "/getInternationalFlights/:id/:trimester/:year",
-    getUser,
-    async (req, res) => {
-        try {
-            //Check if user id Admin
-            const trimester = parseInt(req.params.trimester);
-            console.log(res.user);
-            if (res.user.rol == "Admin") {
-                const monthFlights = await Flight.find({
-                    $or: [
-                        {
-                            "fechas.fecha_ida": {
-                                $regex: `/${trimester*3}/${req.params.year}$`,
-                            },
-                        },
-                        {
-                            "fechas.fecha_ida": {
-                                $regex: `/${trimester*3 - 1}/${req.params.year}$`,
-                            },
-                        },
-                        {
-                            "fechas.fecha_ida": {
-                                $regex: `/${trimester*3 - 2}/${req.params.year}$`,
-                            },
-                        },
-                    ],
-                    estado: "Aprobado",
-                    internacional: true,
-                })
-                .select({ _id: 0, nombre: 1, pais: 1 });
-                res.json(monthFlights);
-            } else {
-                res.status(403).json({ message: "Access Denied" });
-            }
-        } catch (err) {
-            res.status(400).json({ message: err.message });
-        }
-    }
-);
 
 // get all flights by destiny
 router.get("/getFlightsbyDestiny/:id/:destiny", getUser, async (req, res) => {
@@ -138,21 +76,22 @@ router.get("/getCollaboratorFlights/:id", getUser, async (req, res) => {
 });
 
 //Get flights from an specific date, :id is the id of the user making the request
-router.get("/getProgrammedFlights/:id", getUser, async (req, res) => {
+router.get("/getProgrammedFlights/:id/:mes/:anho", getUser, async (req, res) => {
     try {
         //Check if user id Admin
         console.log(res.user);
         if (res.user.rol == "Admin") {
-            console.log(req.body.fecha);
+            // console.log(req.body.fecha);
 
             //Obtener datos de la fecha
 
-            var date = new Date(req.body.fecha);
+            // var date = new Date(req.body.fecha);
 
-            const month = date.getMonth();
-            const year = date.getFullYear();
-            const startDate = new Date(year, month, 1);
-            const endDate = new Date(year, month, 30);
+            // const month = date.getMonth();
+            // const year = date.getFullYear();
+            let mes = parseInt(req.params.mes) - 1;
+            const startDate = new Date(req.params.anho, mes, 1);
+            const endDate = new Date(req.params.anho, mes+1, 1);
 
             console.log("Fecha inicio" + startDate);
             console.log("Fecha Final" + endDate);
@@ -160,7 +99,7 @@ router.get("/getProgrammedFlights/:id", getUser, async (req, res) => {
             const dateFlights = await Flight.find({
                 "fechas.fecha_ida": {
                     $gte: startDate,
-                    $lte: endDate,
+                    $lt: endDate,
                 },
                 estado: "Aprobado",
             }).select({
@@ -178,7 +117,7 @@ router.get("/getProgrammedFlights/:id", getUser, async (req, res) => {
 });
 
 //Get flights from an specific trimester and year, :id is the id of the user making the request
-router.get("/getInternationalFlights/:id", getUser, async (req, res) => {
+router.get("/getInternationalFlights/:id/:trimestre/:anho", getUser, async (req, res) => {
     try {
         //Check if user id Admin
         console.log(res.user);
@@ -189,7 +128,7 @@ router.get("/getInternationalFlights/:id", getUser, async (req, res) => {
             let mes;
 
             //Trimestre
-            switch (req.body.trimestre) {
+            switch (req.params.trimestre) {
                 case "1":
                     mes = 1;
                     break;
@@ -206,17 +145,17 @@ router.get("/getInternationalFlights/:id", getUser, async (req, res) => {
                     mes = 1;
             }
 
-            const fecha = req.body.anho + mes + "1";
+            // const fecha = req.params.anho +"/"+ mes + "/1";
+            // console.log(fecha);
+            // var date = new Date(fecha);
 
-            var date = new Date(fecha);
+            // const month = date.getMonth();
+            // const year = date.getFullYear();
+            const startDate = new Date(req.params.anho, mes, 1);
+            const endDate = new Date(req.params.anho, mes + 2, 30);
 
-            const month = date.getMonth();
-            const year = date.getFullYear();
-            const startDate = new Date(req.body.anho, mes, 1);
-            const endDate = new Date(req.body.anho, mes + 2, 30);
-
-            console.log("Fecha inicio" + startDate);
-            console.log("Fecha Final" + endDate);
+            console.log("Fecha inicio " + startDate);
+            console.log("Fecha Final " + endDate);
 
             const dateFlights = await Flight.find({
                 "fechas.fecha_ida": {
@@ -224,6 +163,7 @@ router.get("/getInternationalFlights/:id", getUser, async (req, res) => {
                     $lte: endDate,
                 },
                 internacional: true,
+                estado: "Aprobado",
             }).select({
                 nombre: 1,
                 pais: 1,
@@ -238,14 +178,15 @@ router.get("/getInternationalFlights/:id", getUser, async (req, res) => {
     }
 });
 
-router.get("/getDestinyFlights/:id", getUser, async (req, res) => {
+router.get("/getDestinyFlights/:id/:destiny", getUser, async (req, res) => {
     try {
         //Check if user id Admin
         console.log(res.user);
         if (res.user.rol == "Admin") {
             console.log(req.params.id);
             const destinyFlights = await Flight.find({
-                pais: req.body.destiny,
+                pais: req.params.destiny,
+                estado: "Aprobado",
             }).select({
                 nombre: 1,
                 "fechas.fecha_ida": 1,

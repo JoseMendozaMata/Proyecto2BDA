@@ -66,7 +66,7 @@ def reject_flight(flight_id, user_id):
     return response
 
 def get_flights_by_month(user_id ,month, year):
-    response = requests.get(api_url+"flights/getFlightsByMonth/"+user_id+"/"+month+"/"+year)
+    response = requests.get(api_url+"flights/getProgrammedFlights/"+user_id+"/"+month+"/"+year)
     return response
 
 # international flights are sorted by trimester
@@ -75,5 +75,5 @@ def get_international_flights(user_id, trimester, year):
     return response
 
 def get_flights_by_destination(user_id, destination):
-    response = requests.get(api_url+"flights/getFlightsbyDestiny/"+user_id+"/"+destination)
+    response = requests.get(api_url+"flights/getDestinyFlights/"+user_id+"/"+destination)
     return response

@@ -31,8 +31,6 @@ def collaborator_new_flight():
         precio = entry_precio.get()
         alojamiento = entry_alojamiento.get()
         transporte = entry_transporte.get()
-        hora_ida = entry_hora_inicio.get()
-        hora_vuelta = entry_hora_fin.get()
 
         
         form_data = {
@@ -43,9 +41,7 @@ def collaborator_new_flight():
                     "pais": pais_destino,
                     "motivo": motivo,
                     "fechas": {"fecha_ida" : fecha_inicio,
-                            "hora_ida" : hora_ida,
                             "fecha_vuelta": fecha_fin,
-                            "hora_vuelta" : hora_vuelta
                             },
                     "details":{
                                 "nombre_aerolinea": aerolinea,
@@ -96,17 +92,9 @@ def collaborator_new_flight():
     entry_fecha_inicio = ttk.Entry(new_window)
     entry_fecha_inicio.grid(row=6, column=1)
 
-    ttk.Label(new_window, text="Hora de Inicio:").grid(row=7, column=0)
-    entry_hora_inicio = ttk.Entry(new_window)
-    entry_hora_inicio.grid(row=7, column=1)
-
     ttk.Label(new_window, text="Fecha de Fin:").grid(row=8, column=0)
     entry_fecha_fin = ttk.Entry(new_window)
     entry_fecha_fin.grid(row=8, column=1)
-
-    ttk.Label(new_window, text="Hora de Fin:").grid(row=9, column=0)
-    entry_hora_fin = ttk.Entry(new_window)
-    entry_hora_fin.grid(row=9, column=1)
 
     ttk.Label(new_window, text="Aerolínea:").grid(row=10, column=0)
     entry_aerolinea = ttk.Entry(new_window)
@@ -173,23 +161,13 @@ def collaborator_history():
 
         ttk.Label(new_window, text="Fecha de Inicio:").grid(row=6, column=0)
         entry_fecha_inicio = ttk.Entry(new_window)
-        entry_fecha_inicio.insert(0,form_data['fechas']['fecha_ida'])
+        entry_fecha_inicio.insert(0,form_data['fechas']['fecha_ida'][:10])
         entry_fecha_inicio.grid(row=6, column=1)
-
-        ttk.Label(new_window, text="Hora de Inicio:").grid(row=7, column=0)
-        entry_hora_inicio = ttk.Entry(new_window)
-        entry_hora_inicio.insert(0,form_data['fechas']['hora_ida'])
-        entry_hora_inicio.grid(row=7, column=1)
 
         ttk.Label(new_window, text="Fecha de Fin:").grid(row=8, column=0)
         entry_fecha_fin = ttk.Entry(new_window)
-        entry_fecha_fin.insert(0,form_data['fechas']['fecha_vuelta'])
+        entry_fecha_fin.insert(0,form_data['fechas']['fecha_vuelta'][:10])
         entry_fecha_fin.grid(row=8, column=1)
-
-        ttk.Label(new_window, text="Hora de Fin:").grid(row=9, column=0)
-        entry_hora_fin = ttk.Entry(new_window)
-        entry_hora_fin.insert(0,form_data['fechas']['hora_vuelta'])
-        entry_hora_fin.grid(row=9, column=1)
 
         ttk.Label(new_window, text="Aerolínea:").grid(row=10, column=0)
         entry_aerolinea = ttk.Entry(new_window)
@@ -229,8 +207,6 @@ def collaborator_history():
                 precio = entry_precio.get()
                 alojamiento = entry_alojamiento.get()
                 transporte = entry_transporte.get()
-                hora_ida = entry_hora_inicio.get()
-                hora_vuelta = entry_hora_fin.get()
 
                 print("id_vuelo: ", id_vuelo)
                 form_data = {
@@ -243,9 +219,7 @@ def collaborator_history():
                             "pais": pais_destino,
                             "motivo": motivo,
                             "fechas": {"fecha_ida" : fecha_inicio,
-                                    "hora_ida" : hora_ida,
                                     "fecha_vuelta": fecha_fin,
-                                    "hora_vuelta" : hora_vuelta
                                     },
                             "details":{
                                         "nombre_aerolinea": aerolinea,
@@ -277,7 +251,7 @@ def collaborator_history():
         
         # Populate the Listbox with the updated form data entries
         for i, form_data in enumerate(form_data_list):
-            form_data_listbox.insert(tk.END, f"Entry {form_data['_id']}: Viaje a {form_data['pais']} el {form_data['fechas']['fecha_ida']}")
+            form_data_listbox.insert(tk.END, f"Entry {form_data['_id']}: Viaje a {form_data['pais']} el {form_data['fechas']['fecha_ida'][:10]}")
 
 
     new_window = tk.Toplevel()
@@ -296,7 +270,7 @@ def collaborator_history():
     print("REPSUESTA", response.text)
     form_data_list = json.loads(response.text)
     for i, form_data in enumerate(form_data_list):
-        form_data_listbox.insert(tk.END, f"Entry {form_data['_id']}: Viaje a {form_data['pais']} el {form_data['fechas']['fecha_ida']}")
+        form_data_listbox.insert(tk.END, f"Entry {form_data['_id']}: Viaje a {form_data['pais']} el {form_data['fechas']['fecha_ida'][:10]}")
 
     # Create a button to display the selected form data
     display_button = ttk.Button(new_window, text="Display Selected Form Data", command=display_form_data)
@@ -342,7 +316,7 @@ def admin_valorar_solicitud():
         nonlocal form_data_list
         form_data_list = json.loads(response.text)
         for i, form_data in enumerate(form_data_list):
-            form_data_listbox.insert(tk.END, f"{form_data['nombre']}: Viaja a {form_data['pais']} de {form_data['fechas']['fecha_ida']} a {form_data['fechas']['fecha_vuelta']} por motivo de {form_data['motivo']}")
+            form_data_listbox.insert(tk.END, f"{form_data['nombre']}: Viaja a {form_data['pais']} de {form_data['fechas']['fecha_ida'][:10]} a {form_data['fechas']['fecha_vuelta'][:10]} por motivo de {form_data['motivo']}")
 
     new_window = tk.Toplevel()
     new_window.title("Form Data Viewer")
@@ -445,7 +419,7 @@ def admin_consultar_por_destino_especifico():
         nonlocal form_data_list
         form_data_list = json.loads(response.text)
         for i, form_data in enumerate(form_data_list):
-            form_data_listbox.insert(tk.END, f"Viaje de {form_data['nombre']} el {form_data['fechas']['fecha_ida']} por motivo de {form_data['motivo']}")
+            form_data_listbox.insert(tk.END, f"Viaje de {form_data['nombre']} el {form_data['fechas']['fecha_ida'][:10]} por motivo de {form_data['motivo']}")
 
     new_window = tk.Toplevel()
     new_window.title("Form Data Viewer")
