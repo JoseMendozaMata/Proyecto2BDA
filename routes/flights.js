@@ -26,8 +26,90 @@ router.get("/getPendingFlights/:id", getUser, async (req, res) => {
         if (res.user.rol == "Admin") {
             const pendingFlights = await Flight.find({
                 estado: "Pendiente",
-            }).select({ _id: 1, estado: 1 });
+            });
+            // .select({ _id: 1, estado: 1 });
             res.json(pendingFlights);
+        } else {
+            res.status(403).json({ message: "Access Denied" });
+        }
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// get all flights by month
+router.get("/getFlightsbyMonth/:id/:month/:year", getUser, async (req, res) => {
+    try {
+        //Check if user id Admin
+        console.log(res.user);
+        if (res.user.rol == "Admin") {
+            const monthFlights = await Flight.find({
+                "fechas.fecha_ida": {
+                    $regex: `/${req.params.month}/${req.params.year}$`,
+                },
+                estado: "Aprobado",
+            }).select({ _id: 0, nombre: 1, departamento: 1 });
+            res.json(monthFlights);
+        } else {
+            res.status(403).json({ message: "Access Denied" });
+        }
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// get all International flights by trimester
+router.get(
+    "/getInternationalFlights/:id/:trimester/:year",
+    getUser,
+    async (req, res) => {
+        try {
+            //Check if user id Admin
+            const trimester = parseInt(req.params.trimester);
+            console.log(res.user);
+            if (res.user.rol == "Admin") {
+                const monthFlights = await Flight.find({
+                    $or: [
+                        {
+                            "fechas.fecha_ida": {
+                                $regex: `/${trimester*3}/${req.params.year}$`,
+                            },
+                        },
+                        {
+                            "fechas.fecha_ida": {
+                                $regex: `/${trimester*3 - 1}/${req.params.year}$`,
+                            },
+                        },
+                        {
+                            "fechas.fecha_ida": {
+                                $regex: `/${trimester*3 - 2}/${req.params.year}$`,
+                            },
+                        },
+                    ],
+                    estado: "Aprobado",
+                    internacional: true,
+                })
+                .select({ _id: 0, nombre: 1, pais: 1 });
+                res.json(monthFlights);
+            } else {
+                res.status(403).json({ message: "Access Denied" });
+            }
+        } catch (err) {
+            res.status(400).json({ message: err.message });
+        }
+    }
+);
+
+// get all flights by destiny
+router.get("/getFlightsbyDestiny/:id/:destiny", getUser, async (req, res) => {
+    try {
+        //Check if user id Admin
+        console.log(res.user);
+        if (res.user.rol == "Admin") {
+            const destinyFlights = await Flight.find({
+                pais: req.params.destiny,
+            }).select({ _id: 1, nombre: 1, motivo: 1, fechas: 1 });
+            res.json(destinyFlights);
         } else {
             res.status(403).json({ message: "Access Denied" });
         }
@@ -152,6 +234,54 @@ router.patch("/:id", getFlight, async (req, res) => {
                     message: "No puede cambiar vuelos de otro colaborador",
                 });
             }
+        }
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+//approve One flight, :id is the flight id
+router.post("/approveFlight/:id/:id_Admin", getFlight, async (req, res) => {
+    //check all required fields
+
+    res.flight.estado = "Aprobado";
+    try {
+        //Get the flight
+        const flight = await res.flight;
+
+        //Get the user that made the request
+        const user = await User.findById(req.params.id_Admin);
+
+        //Check if the change is from a collaborator
+        if (user.rol != "Admin") {
+            res.status(403).json({ message: "No es administrador" });
+        } else {
+            const updatedFlight = await res.flight.save();
+            res.json(updatedFlight);
+        }
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+//reject One flight, :id is the flight id
+router.post("/rejectFlight/:id/:id_Admin", getFlight, async (req, res) => {
+    //check all required fields
+
+    res.flight.estado = "Rechazado";
+    try {
+        //Get the flight
+        const flight = await res.flight;
+
+        //Get the user that made the request
+        const user = await User.findById(req.params.id_Admin);
+
+        //Check if the change is from a collaborator
+        if (user.rol != "Admin") {
+            res.status(403).json({ message: "No es administrador" });
+        } else {
+            const updatedFlight = await res.flight.save();
+            res.json(updatedFlight);
         }
     } catch (err) {
         res.status(400).json({ message: err.message });

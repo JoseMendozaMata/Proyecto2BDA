@@ -22,6 +22,16 @@ def register_collaborator(email, password):
     response = requests.post(api_url+"Users", json=data)
     return response
 
+def register_administrador(email, password):
+    data = {
+        "usuario": email,
+        "clave": password,
+        "rol": "Admin"
+    }
+
+    response = requests.post(api_url+"Users", json=data)
+    return response
+
 def solicit_trip(usr_id, trip_data):
     
     print("url ", api_url+"flights/"+usr_id)
@@ -42,4 +52,28 @@ def get_trip(usr_id):
 def update_trip(trip_id, trip_data):
     response = requests.patch(api_url+"flights/"+trip_id, json=trip_data)
     return response
-#def delete_trip(id_colaborador, id_vuelo, )
+
+def get_pending_trips(user_id):
+    response = requests.get(api_url+"flights/getPendingFlights/"+user_id)
+    return response
+
+def approve_flight(flight_id, user_id):
+    response = requests.post(api_url+"flights/approveFlight/"+flight_id+"/"+user_id)
+    return response
+
+def reject_flight(flight_id, user_id):
+    response = requests.post(api_url+"flights/rejectFlight/"+flight_id+"/"+user_id)
+    return response
+
+def get_flights_by_month(user_id ,month, year):
+    response = requests.get(api_url+"flights/getFlightsByMonth/"+user_id+"/"+month+"/"+year)
+    return response
+
+# international flights are sorted by trimester
+def get_international_flights(user_id, trimester, year):
+    response = requests.get(api_url+"flights/getInternationalFlights/"+user_id+"/"+trimester+"/"+year)
+    return response
+
+def get_flights_by_destination(user_id, destination):
+    response = requests.get(api_url+"flights/getFlightsbyDestiny/"+user_id+"/"+destination)
+    return response

@@ -11,7 +11,7 @@ def collaborator_screen():
     canvas.delete("all")
     for widget in canvas.winfo_children():
         widget.destroy()
-    canvas.create_text(400, 100, text=f"Welcome,!", font=("Helvetica", 16))
+    canvas.create_text(400, 100, text=f"Welcome, {global_user}!", font=("Helvetica", 16))
 
     # Create 4 buttons
     ttk.Button(canvas, text="Nueva solicitud", command=collaborator_new_flight).place(x=300, y=150)
@@ -50,7 +50,6 @@ def collaborator_new_flight():
                     "details":{
                                 "nombre_aerolinea": aerolinea,
                                 "precio": int(precio)},
-
                     "alojamiento": alojamiento,
                     "requiere_transporte": int(transporte),
                     "estado":"Pendiente"
@@ -303,7 +302,171 @@ def collaborator_history():
     display_button = ttk.Button(new_window, text="Display Selected Form Data", command=display_form_data)
     display_button.pack()
 
+
+def admin_screen():
+    canvas.delete("all")
+    for widget in canvas.winfo_children():
+        widget.destroy()
+    canvas.create_text(400, 100, text=f"Welcome, {global_user}!", font=("Helvetica", 16))
+
+    # Create 4 buttons: Valorar solicitud, Consultar viajes programados, Consultar viajes internacionales y Consultar por destino específico
+    ttk.Button(canvas, text="Valorar solicitud", command=admin_valorar_solicitud).place(x=300, y=150)
+    ttk.Button(canvas, text="Consultar viajes programados", command=admin_consultar_viajes_programados).place(x=300, y=200)
+    ttk.Button(canvas, text="Consultar viajes internacionales", command=admin_consultar_viajes_internacionales).place(x=300, y=250)
+    ttk.Button(canvas, text="Consultar por destino específico", command=admin_consultar_por_destino_especifico).place(x=300, y=300)
+    ttk.Button(canvas, text="Back to login", command=main_screen).place(x=300, y=350)
+
+def admin_valorar_solicitud():
+    form_data_list = []
+    def approve_flight(flight_id, user_id):
+        response = api_functions.approve_flight(flight_id, user_id)
+        if(response.status_code == 200):
+            messagebox.showinfo("Aprobado", json.loads(response.text)['_id'])
+        else:
+            messagebox.showerror("Error", json.loads(response.text)['message'])
+        refresh_form_data_listbox()
+
+    def reject_flight(flight_id, user_id):
+        response = api_functions.reject_flight(flight_id, user_id)
+        if(response.status_code == 200):
+            messagebox.showinfo("Rechazado", json.loads(response.text)['_id'])
+        else:
+            messagebox.showerror("Error", json.loads(response.text)['message'])
+        refresh_form_data_listbox()
+
+    def refresh_form_data_listbox():
+        form_data_listbox.delete(0, tk.END)
+        # Populate the Listbox with form data entries
+        response = api_functions.get_pending_trips(global_id)
+        # print("REPSUESTA", response.text)
+        nonlocal form_data_list
+        form_data_list = json.loads(response.text)
+        for i, form_data in enumerate(form_data_list):
+            form_data_listbox.insert(tk.END, f"{form_data['nombre']}: Viaja a {form_data['pais']} de {form_data['fechas']['fecha_ida']} a {form_data['fechas']['fecha_vuelta']} por motivo de {form_data['motivo']}")
+
+    new_window = tk.Toplevel()
+    new_window.title("Form Data Viewer")
+
+    # Create a Listbox to display the stored form data
+    global form_data_listbox
+    form_data_listbox = tk.Listbox(new_window)
+    form_data_listbox.pack()
+    form_data_listbox.config(width=100) 
+
+    refresh_form_data_listbox()
+
     
+    # Create two buttons for approving or rejecting the selected flight
+    ttk.Button(new_window, text="Aprobar", command=lambda: approve_flight(form_data_list[form_data_listbox.curselection()[0]]['_id'], global_id)).pack()
+    ttk.Button(new_window, text="Rechazar", command=lambda: reject_flight(form_data_list[form_data_listbox.curselection()[0]]['_id'], global_id)).pack()
+    
+
+def admin_consultar_viajes_programados():
+    form_data_list = []
+
+    def refresh_form_data_listbox():
+        form_data_listbox.delete(0, tk.END)
+        # Populate the Listbox with form data entries
+        response = api_functions.get_flights_by_month(global_id, entry_start_month.get(), entry_start_year.get())
+        # print("REPSUESTA", response.text)
+        nonlocal form_data_list
+        form_data_list = json.loads(response.text)
+        for i, form_data in enumerate(form_data_list):
+            form_data_listbox.insert(tk.END, f"Viaje de {form_data['nombre']} del departamento {form_data['departamento']}")
+
+    new_window = tk.Toplevel()
+    new_window.title("Form Data Viewer")
+    
+    # Create two entry fields for the start month and year
+    ttk.Label(new_window, text="Mes:").grid(row=0, column=0)
+    entry_start_month = ttk.Entry(new_window)
+    entry_start_month.grid(row=0, column=1)
+
+    ttk.Label(new_window, text="Año:").grid(row=0, column=2)
+    entry_start_year = ttk.Entry(new_window)
+    entry_start_year.grid(row=0, column=3)
+
+    # Create the submit button
+    ttk.Button(new_window, text="Submit", command=refresh_form_data_listbox).grid(row=0, column=4)
+    
+
+    # Create a Listbox to display the stored form data
+    global form_data_listbox
+    form_data_listbox = tk.Listbox(new_window)
+    form_data_listbox.grid(row=1, column=0, columnspan=5)
+    form_data_listbox.config(width=100) 
+
+    refresh_form_data_listbox()
+def admin_consultar_viajes_internacionales():
+    form_data_list = []
+
+    def refresh_form_data_listbox():
+        form_data_listbox.delete(0, tk.END)
+        # Populate the Listbox with form data entries
+        response = api_functions.get_international_flights(global_id, entry_start_trimester.get(), entry_start_year.get())
+        # print("REPSUESTA", response.text)
+        nonlocal form_data_list
+        form_data_list = json.loads(response.text)
+        for i, form_data in enumerate(form_data_list):
+            form_data_listbox.insert(tk.END, f"Viaje de {form_data['nombre']} a {form_data['pais']}")
+
+    new_window = tk.Toplevel()
+    new_window.title("Form Data Viewer")
+    
+    # Create two entry fields for the start month and year
+    ttk.Label(new_window, text="Trimestre:").grid(row=0, column=0)
+    entry_start_trimester = ttk.Entry(new_window)
+    entry_start_trimester.grid(row=0, column=1)
+
+    ttk.Label(new_window, text="Año:").grid(row=0, column=2)
+    entry_start_year = ttk.Entry(new_window)
+    entry_start_year.grid(row=0, column=3)
+
+    # Create the submit button
+    ttk.Button(new_window, text="Submit", command=refresh_form_data_listbox).grid(row=0, column=4)
+    
+
+    # Create a Listbox to display the stored form data
+    global form_data_listbox
+    form_data_listbox = tk.Listbox(new_window)
+    form_data_listbox.grid(row=1, column=0, columnspan=5)
+    form_data_listbox.config(width=100) 
+
+    refresh_form_data_listbox()
+
+def admin_consultar_por_destino_especifico():
+    form_data_list = []
+
+    def refresh_form_data_listbox():
+        form_data_listbox.delete(0, tk.END)
+        # Populate the Listbox with form data entries
+        response = api_functions.get_flights_by_destination(global_id, entry_start_country.get())
+        # print("REPSUESTA", response.text)
+        nonlocal form_data_list
+        form_data_list = json.loads(response.text)
+        for i, form_data in enumerate(form_data_list):
+            form_data_listbox.insert(tk.END, f"Viaje de {form_data['nombre']} el {form_data['fechas']['fecha_ida']} por motivo de {form_data['motivo']}")
+
+    new_window = tk.Toplevel()
+    new_window.title("Form Data Viewer")
+    
+    # Create a entry field for the destination country
+
+    ttk.Label(new_window, text="Pais:").grid(row=0, column=0)
+    entry_start_country = ttk.Entry(new_window)
+    entry_start_country.grid(row=0, column=1)
+
+    # Create the submit button
+    ttk.Button(new_window, text="Submit", command=refresh_form_data_listbox).grid(row=0, column=2)
+    
+
+    # Create a Listbox to display the stored form data
+    global form_data_listbox
+    form_data_listbox = tk.Listbox(new_window)
+    form_data_listbox.grid(row=1, column=0, columnspan=3)
+    form_data_listbox.config(width=100) 
+
+    refresh_form_data_listbox()
 
 # Function to change the canvas content
 def login_screen(user_type):
@@ -335,7 +498,7 @@ def close_application():
 # Placeholder function for login logic
 def login(user_type, username, password):
     # You can add your authentication logic here
-    if user_type == "Collaborator":
+    # if user_type == "Collaborator":
         # Authentication logic for collaborators
         response = api_functions.login_collaborator(username,password)
         print(response.status_code)
@@ -346,16 +509,19 @@ def login(user_type, username, password):
             global_password = password
             global_id = response.text.replace('"', '')
             messagebox.showinfo("Su id de usuario es",global_id)
-            collaborator_screen()
+            if user_type == "Collaborator":
+                collaborator_screen()
+            elif user_type == "Admin":
+                admin_screen()
         else:
             messagebox.showerror("Login Failed", "Invalid username or password")
 
-    elif user_type == "Admin":
-        # Authentication logic for admins
-        if username == 'admin' and password == 'password':
-            messagebox.showinfo("Login Success", "Admin Login Successful")
-        else:
-            messagebox.showerror("Login Failed", "Invalid username or password")
+    # elif user_type == "Admin":
+    #     # Authentication logic for admins
+    #     if username == 'admin' and password == 'password':
+    #         messagebox.showinfo("Login Success", "Admin Login Successful")
+    #     else:
+    #         messagebox.showerror("Login Failed", "Invalid username or password")
 
 # Placeholder function for registration logic for collaborators
 def register_collaborator(username, password):
@@ -372,8 +538,9 @@ def register_collaborator(username, password):
 # Placeholder function for registration logic for admins
 def register_admin(username, password):
     #add api logic
-    
-    print(global_password, global_user)
+    response=api_functions.register_administrador(username,password)
+    print(response)
+    messagebox.showinfo("Register", response.text)
     #messagebox.showinfo("Register", "Admin Registration Feature Coming Soon")
 def main_screen():
     # Initial content on the canvas
