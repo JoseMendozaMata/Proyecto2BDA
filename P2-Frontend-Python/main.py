@@ -39,7 +39,7 @@ def collaborator_new_flight():
                     "nombre": nombre_completo,
                     "puesto": puesto,
                     "departamento": departamento,
-                    "internacional": False,
+                    "internacional": int(tipo_de_viaje),
                     "pais": pais_destino,
                     "motivo": motivo,
                     "fechas": {"fecha_ida" : fecha_inicio,
@@ -49,10 +49,9 @@ def collaborator_new_flight():
                             },
                     "details":{
                                 "nombre_aerolinea": aerolinea,
-                                "precio": precio},
-
+                                "precio": int(precio)},
                     "alojamiento": alojamiento,
-                    "requiere_transporte": False,
+                    "requiere_transporte": int(transporte),
                     "estado":"Pendiente"
                     
                     
@@ -81,7 +80,7 @@ def collaborator_new_flight():
     entry_departamento = ttk.Entry(new_window)
     entry_departamento.grid(row=2, column=1)
 
-    ttk.Label(new_window, text="Tipo de Viaje:").grid(row=3, column=0)
+    ttk.Label(new_window, text="Internacional? (0/1):").grid(row=3, column=0)
     entry_tipo_de_viaje = ttk.Entry(new_window)
     entry_tipo_de_viaje.grid(row=3, column=1)
 
@@ -121,7 +120,7 @@ def collaborator_new_flight():
     entry_alojamiento = ttk.Entry(new_window)
     entry_alojamiento.grid(row=12, column=1)
 
-    ttk.Label(new_window, text="Transporte:").grid(row=13, column=0)
+    ttk.Label(new_window, text="Transporte? (0/1):").grid(row=13, column=0)
     entry_transporte = ttk.Entry(new_window)
     entry_transporte.grid(row=13, column=1)
 
@@ -157,7 +156,7 @@ def collaborator_history():
         entry_departamento.insert(0,form_data['departamento'])
         entry_departamento.grid(row=2, column=1)
 
-        ttk.Label(new_window, text="Tipo de Viaje:").grid(row=3, column=0)
+        ttk.Label(new_window, text="Internacional? (0/1):").grid(row=3, column=0)
         entry_tipo_de_viaje = ttk.Entry(new_window)
         entry_tipo_de_viaje.insert(0,form_data['internacional'])
         entry_tipo_de_viaje.grid(row=3, column=1)
@@ -207,7 +206,7 @@ def collaborator_history():
         entry_alojamiento.insert(0,form_data['alojamiento'])
         entry_alojamiento.grid(row=12, column=1)
 
-        ttk.Label(new_window, text="Transporte:").grid(row=13, column=0)
+        ttk.Label(new_window, text="Transporte? (0/1):").grid(row=13, column=0)
         entry_transporte = ttk.Entry(new_window)
         entry_transporte.insert(0,form_data['requiere_transporte'])
         entry_transporte.grid(row=13, column=1)
@@ -215,6 +214,8 @@ def collaborator_history():
         # Create and position the Submit button
         submit_button = ttk.Button(new_window, text="Update", command= lambda :update_form(form_data['_id']))
         submit_button.grid(row=14, column=0, columnspan=2)
+        submit_button = ttk.Button(new_window, text="Delete", command= lambda :delete_form_data(index,form_data['_id']))
+        submit_button.grid(row=14, column=3, columnspan=2)
         def update_form(id_vuelo):
                 nombre_completo = entry_nombre_completo.get()
                 puesto = entry_puesto.get()
@@ -231,14 +232,14 @@ def collaborator_history():
                 hora_ida = entry_hora_inicio.get()
                 hora_vuelta = entry_hora_fin.get()
 
-                
+                print("id_vuelo: ", id_vuelo)
                 form_data = {
                             "id_colaborador" : global_id,
                             "id_vuelo": id_vuelo,
                             "nombre": nombre_completo,
                             "puesto": puesto,
                             "departamento": departamento,
-                            "internacional": False,
+                            "internacional": int(tipo_de_viaje),
                             "pais": pais_destino,
                             "motivo": motivo,
                             "fechas": {"fecha_ida" : fecha_inicio,
@@ -248,33 +249,36 @@ def collaborator_history():
                                     },
                             "details":{
                                         "nombre_aerolinea": aerolinea,
-                                        "precio": 500},
+                                        "precio": int(precio)},
 
                             "alojamiento": alojamiento,
-                            "requiere_transporte": False,
+                            "requiere_transporte": int(transporte),
                             "estado":"Pendiente"
                             
                             
                         }
-                response = api_functions.solicit_trip(global_id,form_data)
+                response = api_functions.solicit_trip(id_vuelo,form_data)
                 print("trip form res",response)
                 print("trip form number",response.status_code)
                 print("trip form text", response.text)
                 
                 #form_data_list.append(form_data)
                 api_functions.update_trip(id_vuelo, form_data)
+                refresh_form_data_listbox()
                 
-    def delete_form_data(index):
+    def delete_form_data(index,trip_id):
         global form_data_list
         form_data_list.pop(index)
+        api_functions.delete_trip(trip_id, global_id)
         refresh_form_data_listbox()
 
     def refresh_form_data_listbox():
         form_data_listbox.delete(0, tk.END)  # Clear the Listbox
-
+        
         # Populate the Listbox with the updated form data entries
         for i, form_data in enumerate(form_data_list):
-            form_data_listbox.insert(tk.END, f"Entry {i + 1}")
+            form_data_listbox.insert(tk.END, f"Entry {form_data['_id']}: Viaje a {form_data['pais']} el {form_data['fechas']['fecha_ida']}")
+
 
     new_window = tk.Toplevel()
     new_window.title("Form Data Viewer")
