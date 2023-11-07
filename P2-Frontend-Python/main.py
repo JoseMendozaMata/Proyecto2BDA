@@ -406,7 +406,7 @@ def admin_consultar_viajes_internacionales():
     form_data_listbox.grid(row=1, column=0, columnspan=5)
     form_data_listbox.config(width=100) 
 
-    refresh_form_data_listbox()
+    # refresh_form_data_listbox()
 
 def admin_consultar_por_destino_especifico():
     form_data_list = []
@@ -440,7 +440,7 @@ def admin_consultar_por_destino_especifico():
     form_data_listbox.grid(row=1, column=0, columnspan=3)
     form_data_listbox.config(width=100) 
 
-    refresh_form_data_listbox()
+    # refresh_form_data_listbox()
 
 # Function to change the canvas content
 def login_screen(user_type):
